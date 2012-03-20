@@ -1470,7 +1470,7 @@ namespace SQLite
 			public bool Ascending { get; set; }
 		}
 
-		TableQuery (SQLiteConnection conn, TableMapping table)
+		protected TableQuery (SQLiteConnection conn, TableMapping table)
 		{
 			Connection = conn;
 			Table = table;
@@ -1482,9 +1482,14 @@ namespace SQLite
 			Table = Connection.GetMapping (typeof(T));
 		}
 
+		protected virtual object NewTableQuery ()
+		{
+			return new TableQuery<T> (Connection, Table);
+		}
+
 		public TableQuery<T> Clone ()
 		{
-			var q = new TableQuery<T> (Connection, Table);
+			var q = NewTableQuery () as TableQuery<T>;
 			q._where = _where;
 			q._deferred = _deferred;
 			if (_orderBys != null) {
