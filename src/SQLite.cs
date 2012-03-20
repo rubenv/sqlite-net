@@ -342,6 +342,11 @@ namespace SQLite
 			}
 		}
 
+		protected virtual SQLiteCommand NewCommand ()
+		{
+			return new SQLiteCommand (this);
+		}
+
 		/// <summary>
 		/// Creates a new SQLiteCommand given the command text with arguments. Place a '?'
 		/// in the command text for each of the arguments.
@@ -360,7 +365,7 @@ namespace SQLite
 			if (!_open) {
 				throw SQLiteException.New (SQLite3.Result.Error, "Cannot create commands from unopened database");
 			} else {
-				var cmd = new SQLiteCommand (this);
+				var cmd = NewCommand ();
 				cmd.CommandText = cmdText;
 				foreach (var o in ps) {
 					cmd.Bind (o);
@@ -1170,6 +1175,11 @@ namespace SQLite
 			return ExecuteDeferredQuery<T>(map).ToList();
 		}
 
+		protected virtual void InstanceCreated (object obj)
+		{
+			// Can be overridden.
+		}
+
 		public IEnumerable<T> ExecuteDeferredQuery<T> (TableMapping map)
 		{
 			if (_conn.Trace) {
@@ -1195,6 +1205,7 @@ namespace SQLite
 						var val = ReadCol (stmt, i, colType, cols [i].ColumnType);
 						cols [i].SetValue (obj, val);
  					}
+					InstanceCreated (obj);
 					yield return (T)obj;
 				}
 			}
